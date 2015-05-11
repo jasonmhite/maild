@@ -38,52 +38,46 @@ class Account(object):
         self.debug = debug
 
     def __call__(self):
-        if self.debug:
-            print("Account: {} -> initializing IDLE".format(self.username))
+        n = 0
+        while True:
+            if self.debug:
+                print("Account: {} -> Opening [{}]".format(self.username, n))
+            server = IMAPClient(HOSTNAME, use_uid=True, ssl=True)
+            server.login(self.username, self.password)
+            server.select_folder(MAILBOX)
+            server.idle()
 
-        server = IMAPClient(HOSTNAME, use_uid=True, ssl=True)
-        server.login(self.username, self.password)
-        server.select_folder(MAILBOX)
-        server.idle()
+            try:
+                msg = server.idle_check(timeout=30)
 
-        if self.debug:
+                if msg:
+                    print("Account: {} -> Message: {}".format(self.username, msg))
 
-            while True:
-                server = IMAPClient(HOSTNAME, use_uid=True, ssl=True)
-                server.login(self.username, self.password)
-                server.select_folder(MAILBOX)
-                server.idle()
+                for i in msg:
+                    if b'EXISTS' in i:
+                        message = "pulse 0 0 255 1 1000 60"
+                        sock = socket.socket()
+                        try:
+                            sock.connect((SOCKET_ADDRESS, SOCKET_PORT))
+                            sock.sendall(message.encode())
 
-                try:
-                    msg = server.idle_check(timeout=30)
+                        except Exception as e:
+                            print("Account: {} -> socket send failed".format(self.username))
+                            print(e)
 
-                    if msg:
-                        print("Account: {} -> Message: {}".format(self.username, msg))
+                        finally:
+                            sock.close()
 
-                    for i in msg:
-                        if b'EXISTS' in i:
-                            message = "pulse 0 0 255 1 1000 60"
-                            sock = socket.socket()
-                            try:
-                                sock.connect((SOCKET_ADDRESS, SOCKET_PORT))
-                                sock.sendall(message.encode())
+                        if self.debug:
+                            print("Account: {} -> sent blink".format(self.username))
 
-                            except Exception as e:
-                                print("Account: {} -> socket send failed".format(self.username))
-                                print(e)
+            except Exception as e:
+                print("Account: {} -> {}".format(self.username, e))
+                pass
 
-                            finally:
-                                sock.close()
-
-                            if self.debug:
-                                print("Account: {} -> sent blink".format(self.username))
-
-                except Exception as e:
-                    print("Account: {} -> {}".format(self.username, e))
-                    pass
-
-                finally:
-                    server.idle_done()
+            finally:
+                server.idle_done()
+                n += 1
 
 with open("/root/maild.yml") as f: # Yes, this is running as root, sue me
     cfg = yaml.load(f.read())
