@@ -49,36 +49,34 @@ class Account(object):
         if self.debug:
             print("Account: {} -> IDLE ready".format(self.username))
 
-        try:
             while True:
-                msg = server.idle_check(timeout=10)
+                try:
+                    msg = server.idle_check(timeout=10)
 
-                if msg:
-                    print("Account: {} -> Message: {}".format(self.username, msg))
+                    if msg:
+                        print("Account: {} -> Message: {}".format(self.username, msg))
 
-                for i in msg:
-                    if b'EXISTS' in i:
-                        message = "pulse 0 0 255 1 1000 60"
-                        sock = socket.socket()
-                        try:
-                            sock.connect((SOCKET_ADDRESS, SOCKET_PORT))
-                            sock.sendall(message.encode())
+                    for i in msg:
+                        if b'EXISTS' in i:
+                            message = "pulse 0 0 255 1 1000 60"
+                            sock = socket.socket()
+                            try:
+                                sock.connect((SOCKET_ADDRESS, SOCKET_PORT))
+                                sock.sendall(message.encode())
 
-                        except Exception as e:
-                            print("Account: {} -> socket send failed".format(self.username))
-                            print(e)
+                            except Exception as e:
+                                print("Account: {} -> socket send failed".format(self.username))
+                                print(e)
 
-                        finally:
-                            sock.close()
+                            finally:
+                                sock.close()
 
-                        if self.debug:
-                            print("Account: {} -> sent blink".format(self.username))
+                            if self.debug:
+                                print("Account: {} -> sent blink".format(self.username))
 
-        except Exception as e:
-            print("Account: {} -> {}".format(self.username, e))
-            pass
-        finally:
-            server.idle_done()
+                except Exception as e:
+                    print("Account: {} -> {}".format(self.username, e))
+                    pass
 
 with open("/root/maild.yml") as f: # Yes, this is running as root, sue me
     cfg = yaml.load(f.read())
