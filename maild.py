@@ -51,7 +51,7 @@ class Account(object):
 
         try:
             while True:
-                msg = server.idle_check()
+                msg = server.idle_check(timeout=10)
 
                 if self.debug:
                     print("Account: {} -> Message: {}".format(self.username, msg))
