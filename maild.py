@@ -47,11 +47,15 @@ class Account(object):
         server.idle()
 
         if self.debug:
-            print("Account: {} -> IDLE ready".format(self.username))
 
             while True:
+                server = IMAPClient(HOSTNAME, use_uid=True, ssl=True)
+                server.login(self.username, self.password)
+                server.select_folder(MAILBOX)
+                server.idle()
+
                 try:
-                    msg = server.idle_check(timeout=10)
+                    msg = server.idle_check(timeout=30)
 
                     if msg:
                         print("Account: {} -> Message: {}".format(self.username, msg))
@@ -77,6 +81,9 @@ class Account(object):
                 except Exception as e:
                     print("Account: {} -> {}".format(self.username, e))
                     pass
+
+                finally:
+                    server.idle_done()
 
 with open("/root/maild.yml") as f: # Yes, this is running as root, sue me
     cfg = yaml.load(f.read())
