@@ -53,7 +53,7 @@ class Account(object):
             while True:
                 msg = server.idle_check(timeout=10)
 
-                if self.debug:
+                if msg:
                     print("Account: {} -> Message: {}".format(self.username, msg))
 
                 for i in msg:
@@ -80,7 +80,7 @@ class Account(object):
         finally:
             server.idle_done()
 
-with open("~/maild.conf") as f:
+with open("/root/maild.yml") as f: # Yes, this is running as root, sue me
     cfg = yaml.load(f.read())
 
 accounts = list([Account(act, pwd, debug=True) for act, pwd in cfg.items()])
