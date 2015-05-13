@@ -82,8 +82,10 @@ class Account(object):
                 print("Account: {} -> {}".format(self.username, e))
 
             finally:
-                server.idle_done()
-                server.logout()
+                try:
+                    server.idle_done()
+                    server.logout()
+                except: pass
                 n += 1
 
 with open("/root/maild.yml") as f: # Yes, this is running as root, sue me
