@@ -41,12 +41,12 @@ class Account(object):
 
     def __call__(self):
         n = 0
-        server = IMAPClient(HOSTNAME, use_uid=True, ssl=True)
 
         while True:
             if self.debug:
                 print("Account: {} -> Opening [{}]".format(self.username, n))
             try:
+                server = IMAPClient(HOSTNAME, use_uid=True, ssl=True)
                 server.login(self.username, self.password)
                 server.select_folder(MAILBOX)
                 server.idle()
@@ -84,6 +84,7 @@ class Account(object):
             finally:
                 try:
                     server.idle_done()
+                    server.logout()
                 except: pass
                 n += 1
 
