@@ -52,7 +52,7 @@ class Account(object):
                 server.idle()
             except Exception as e:
                 print("Account: {} -> Failed to initialize connection: {}".format(self.username, e))
-                sys.exit(1)
+                raise Exception("Failed to login")
 
             try:
                 msg = server.idle_check(timeout=120)
@@ -84,7 +84,6 @@ class Account(object):
             finally:
                 try:
                     server.idle_done()
-                    server.logout()
                 except: pass
                 n += 1
 
