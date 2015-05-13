@@ -55,7 +55,7 @@ class Account(object):
                 sys.exit(1)
 
             try:
-                msg = server.idle_check(timeout=30)
+                msg = server.idle_check(timeout=120)
 
                 if msg:
                     print("Account: {} -> Message: {}".format(self.username, msg))
@@ -83,12 +83,13 @@ class Account(object):
 
             finally:
                 server.idle_done()
+                server.logout()
                 n += 1
 
 with open("/root/maild.yml") as f: # Yes, this is running as root, sue me
     cfg = yaml.load(f.read())
 
-accounts = list([Account(act, pwd, debug=True) for act, pwd in cfg.items()])
+accounts = list([Account(act, pwd, debug=False) for act, pwd in cfg.items()])
 
 loop = asyncio.get_event_loop()
 
