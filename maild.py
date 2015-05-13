@@ -2,15 +2,17 @@
 
 import asyncio
 import yaml
+import socket
+import sys
 from imapclient import IMAPClient
 from concurrent.futures import ProcessPoolExecutor
-import socket
 
 SOCKET_ADDRESS = '10.1.1.23'
 SOCKET_PORT = 59993
 HOSTNAME = 'imap.gmail.com'
 MAILBOX = 'INBOX'
 
+sys.stdout = sys.stderr
 
 @asyncio.coroutine
 def echo_client(msg):
@@ -39,13 +41,18 @@ class Account(object):
 
     def __call__(self):
         n = 0
+        server = IMAPClient(HOSTNAME, use_uid=True, ssl=True)
+
         while True:
             if self.debug:
                 print("Account: {} -> Opening [{}]".format(self.username, n))
-            server = IMAPClient(HOSTNAME, use_uid=True, ssl=True)
-            server.login(self.username, self.password)
-            server.select_folder(MAILBOX)
-            server.idle()
+            try:
+                server.login(self.username, self.password)
+                server.select_folder(MAILBOX)
+                server.idle()
+            except Exception as e:
+                print("Account: {} -> Failed to initialize connection: {}".format(self.username, e))
+                sys.exit(1)
 
             try:
                 msg = server.idle_check(timeout=30)
@@ -73,7 +80,6 @@ class Account(object):
 
             except Exception as e:
                 print("Account: {} -> {}".format(self.username, e))
-                pass
 
             finally:
                 server.idle_done()
