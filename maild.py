@@ -8,7 +8,7 @@ from imapclient import IMAPClient
 from concurrent.futures import ProcessPoolExecutor
 
 SOCKET_ADDRESS = '10.1.1.23'
-SOCKET_PORT = 59993
+SOCKET_PORT = 9001
 HOSTNAME = 'imap.gmail.com'
 MAILBOX = 'INBOX'
 
@@ -62,7 +62,7 @@ class Account(object):
 
                 for i in msg:
                     if b'EXISTS' in i:
-                        message = "pulse 0 0 255 1 1000 60"
+                        message = "pulse 0 0 1 1 3"
                         sock = socket.socket()
                         try:
                             sock.connect((SOCKET_ADDRESS, SOCKET_PORT))
